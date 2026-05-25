@@ -1,0 +1,6 @@
+{
+  "name": "AI 数字员工 Stitch",
+  "description": "基于 RAG 检索模型、条件判定和 DAG 流程编排的 AI 数字员工系统 prototype，整合美妆智能客服及企业日常行政，实现人机协同闭环。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

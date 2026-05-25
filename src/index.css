@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Material Design 3 Lavender/Indigo Brand Palette from the uploaded UI image */
+  --color-primary: #65558f;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #eaddff;
+  --color-on-primary-container: #21005d;
+  --color-primary-fixed: #eaddff;
+  --color-primary-fixed-dim: #d0bcfe;
+
+  --color-secondary: #625b71;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e8def8;
+  --color-on-secondary-container: #1d192b;
+
+  --color-tertiary: #7d5260;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #ffd8e4;
+  --color-on-tertiary-container: #31111d;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #410002;
+
+  --color-surface: #fdf7ff;
+  --color-on-surface: #1d1b20;
+  --color-on-surface-variant: #49454f;
+
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f7f2fa;
+  --color-surface-container: #f3edf7;
+  --color-surface-container-high: #ece6f0;
+  --color-surface-container-highest: #e6e1e5;
+
+  --color-outline: #79747e;
+  --color-outline-variant: #e7e0ec;
+
+  --color-status-online: #24a148;
+  --color-success-beauty-green: #2e7d32;
+
+  /* Custom shadows and animations */
+  --shadow-sm: 0 1px 3px rgba(101, 85, 143, 0.04), 0 1px 2px rgba(101, 85, 143, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(101, 85, 143, 0.07), 0 2px 4px -1px rgba(101, 85, 143, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(101, 85, 143, 0.08), 0 4px 6px -2px rgba(101, 85, 143, 0.04);
+}
+
+/* Premium Visual Enhancements & Dot Grid Matrix Background of Workflow Canvas */
+.dot-matrix-bg {
+  background-image: radial-gradient(#e7e0ec 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Custom Scrollbars to keep the aesthetic extremely sleek */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container-low);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* Micro animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Selection aesthetics */
+::selection {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}

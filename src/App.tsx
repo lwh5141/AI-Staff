@@ -571,7 +571,7 @@ export default function App() {
         {/* Top Navbar Header */}
         <header className="h-20 border-b border-outline-variant px-8 flex items-center justify-between sticky top-0 bg-surface z-30 shrink-0">
           <div className="flex items-center gap-4">
-            <h2 className="text-md font-semibold text-primary font-mono tracking-tight uppercase">AI Staff Stitch</h2>
+            <h2 className="text-md font-semibold text-primary font-mono tracking-tight uppercase">AI Staff</h2>
             <div className="w-px h-5 bg-outline-variant"></div>
             <div className="bg-primary-container/25 text-primary text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm">
               <Sparkles size={12} className="animate-pulse" />

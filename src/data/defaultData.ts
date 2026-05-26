@@ -387,5 +387,47 @@ export const PRESET_MESSAGES: Record<string, ChatMessage[]> = {
         ]
       }
     }
+  ],
+  session_beauty_2: [
+    {
+      id: 'm4',
+      sessionId: 'session_beauty_2',
+      sender: 'system',
+      text: '已挂载系统预设：美妆数字客服 v2.4 (引擎: gemini-3.5-flash)',
+      time: '昨天'
+    },
+    {
+      id: 'm5',
+      sessionId: 'session_beauty_2',
+      sender: 'user',
+      text: '玻色因抗老精华和视黄醇面霜应该怎么搭配使用？白天能用吗？',
+      time: '昨天'
+    },
+    {
+      id: 'm6',
+      sessionId: 'session_beauty_2',
+      sender: 'assistant',
+      text: '您好！玻色因抗老系列是非常经典的黄金搭配组合，为您详细说明使用顺序和注意事项：\n\n1. **晚间使用顺序**（推荐）：\n   - 第一步：洁面 → 爽肤水\n   - 第二步：**玻色因10%抗老精华**（促进粘多糖合成，增加胶原蛋白）\n   - 第三步：**视黄醇衍生物充盈面霜**（锁住精华，加强修护）\n   - 配合自下而上的提拉按摩手法效果更佳\n\n2. **白天使用建议**：\n   - 玻色因精华白天可以使用，但**视黄醇类产品建议仅在夜间使用**\n   - 白天务必搭配 SPF30+ 防晒霜，避免光敏反应\n\n3. **适用人群**：\n   - 适合25岁以上有抗老需求的熟龄肌\n   - 敏感肌建议先在耳后做24小时测试\n\n建议连续使用4-8周可见明显紧致淡纹效果！有任何不适请随时联系。',
+      time: '昨天',
+      metadata: {
+        latency: '1.02s',
+        tokens: 445,
+        model: 'gemini-3.5-flash',
+        hits: [
+          {
+            docName: '抗老精华系列_成分解析_2023Q4.pdf',
+            chunkNumber: 1,
+            score: 0.96,
+            text: '玻色因10%黄金抗老复提打底：建议与同系列视黄醇充盈面霜搭配使用，夜间护肤适当增加用量，配合自下而上的向上提升按摩手法。'
+          },
+          {
+            docName: '抗老精华系列_成分解析_2023Q4.pdf',
+            chunkNumber: 3,
+            score: 0.91,
+            text: '搭配建议：为达到最佳抗老淡纹效果，强烈推荐与同系列高能视黄醇充盈面霜搭配打底使用。夜间是新陈代谢及细胞修护的黄金时段。'
+          }
+        ]
+      }
+    }
   ]
 };

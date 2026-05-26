@@ -976,7 +976,7 @@ export default function App() {
                 </div>
 
                 {/* Messages body */}
-                <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-surface max-h-[460px]">
+                <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-surface">
                   {(messages[selectedSessionId] || []).map((msg) => {
                     if (msg.sender === 'system') {
                       return (

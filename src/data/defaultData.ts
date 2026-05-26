@@ -315,5 +315,77 @@ export const PRESET_MESSAGES: Record<string, ChatMessage[]> = {
         ]
       }
     }
+  ],
+  session_ship_2: [
+    {
+      id: 'ms4',
+      sessionId: 'session_ship_2',
+      sender: 'system',
+      text: '已挂载系统预设：售后退换货助手 (引擎: gemini-3.5-flash)',
+      time: '昨天'
+    },
+    {
+      id: 'ms5',
+      sessionId: 'session_ship_2',
+      sender: 'user',
+      text: '我买的抗老精华用了两周想换货，可以换其他系列吗？运费谁承担？',
+      time: '昨天'
+    },
+    {
+      id: 'ms6',
+      sessionId: 'session_ship_2',
+      sender: 'assistant',
+      text: '您好！关于抗老精华系列的换货政策，为您详细说明如下：\n\n1. **换货时效**：自签收之日起 **30天内** 支持无理由换货（需保证商品剩余容量不低于70%）。\n2. **换货范围**：可更换同价位或补差价更换更高价位的其他系列产品，暂不支持更换低价产品退差额。\n3. **运费承担**：\n   - 因商品质量问题或发错货：往返运费由我们承担\n   - 因个人喜好换货：寄回运费由您承担，重新发货运费由我们承担\n\n请您提供订单号和想要更换的具体产品名称，我立即为您核实库存并生成换货工单！',
+      time: '昨天',
+      metadata: {
+        latency: '0.92s',
+        tokens: 385,
+        model: 'gemini-3.5-flash',
+        hits: [
+          {
+            docName: '2023大促专案_价格与赠品策略.xlsx',
+            chunkNumber: 3,
+            score: 0.91,
+            text: '换货政策：30天内无理由换货，商品剩余容量需≥70%。质量问题我方承担运费，个人原因换货买家承担寄回运费。'
+          }
+        ]
+      }
+    }
+  ],
+  session_adm_2: [
+    {
+      id: 'ma4',
+      sessionId: 'session_adm_2',
+      sender: 'system',
+      text: '已挂载系统预设：内部行政助手 (引擎: gemini-3.5-flash)',
+      time: '2026-05-23'
+    },
+    {
+      id: 'ma5',
+      sessionId: 'session_adm_2',
+      sender: 'user',
+      text: '今年年假有多少天？入职不满一年怎么算？需要提前多久申请？',
+      time: '2026-05-23'
+    },
+    {
+      id: 'ma6',
+      sessionId: 'session_adm_2',
+      sender: 'assistant',
+      text: '为您查询到最新的带薪年假政策，具体规定如下：\n\n1. **年假天数标准**：\n   - 累计工作满1年不满10年：**5天/年**\n   - 累计工作满10年不满20年：**10天/年**\n   - 累计工作满20年：**15天/年**\n2. **入职不满一年计算**：\n   按照当年在职天数折算，公式为：（当年度剩余日历天数 ÷ 365）× 全年应享受天数，折算后不足1整天部分不享受。\n3. **申请流程**：\n   - 请至少 **提前3个工作日** 在飞书 OA 系统提交「请假申请单」\n   - 3天以内由直属主管审批，3天以上需部门总监审批\n   - 年假可分段休，但单次最少休0.5天\n\n如需查询您的具体年假余额，可以告诉我您的工号，我帮您核实！',
+      time: '2026-05-23',
+      metadata: {
+        latency: '0.81s',
+        tokens: 420,
+        model: 'gemini-3.5-flash',
+        hits: [
+          {
+            docName: '员工手册与报销规范.md',
+            chunkNumber: 2,
+            score: 0.93,
+            text: '年假标准：1-10年5天，10-20年10天，20年以上15天。入职不满一年按在职天数折算。需提前3个工作日申请。'
+          }
+        ]
+      }
+    }
   ]
 };

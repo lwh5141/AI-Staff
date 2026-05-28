@@ -1,0 +1,12 @@
+﻿source_name,source_type,trust_level,main_usage,url
+国家药监局二维码页,监管,A,证照编号、持证主体、当前状态,https://zhjg.nmpa.gov.cn/license-api-release/m/v2/license/qrvalue/getinfo?qrValue=3999038997
+国家药监局历史批准页,监管,A,历史批准信息,https://www.nmpa.gov.cn/directory/web/nmpa/zwfw/sdxx/sdxxhzp/hzppjfb/20240416130704130.html
+国家药监局变更纠错页,监管,A,变更/纠错送达检索,https://www.nmpa.gov.cn/zwfw/sdxx/sdxxhzp/hzppjfb/20260126161914127.html
+Yami品牌页,电商,A,品牌页、卖点、SKU、优惠券,https://www.yami.com/zh/b/ehd/12354
+Yami 500ml页,电商,A,标题、亮点、规格、成分、储存、发货,https://www.yami.com/zh/p/shampoo-anti-hair-loss-oil-control-fluffy-soft-ginger-shampoo-strong-and-healthy-hair-shampoo-500ml-bottle/5024166891
+Weee 500ml页,电商,A,标题、描述、预计送达、运费门槛,https://www.sayweee.com/zh/product/EHD-Anti-Hair-Loss-Shampoo-Oil-Control-Fluffy-Smooth-Hair-500ml-Bottle/2057376
+MaskQueen 500ml页,电商,A,产品说明、发货时间、包邮门槛、改地址,https://www.maskqueen.com/pro_detail.aspx?pid=3058
+抖音官方店主页,店铺,A,店铺公开文案,https://www.douyin.com/user/MS4wLjABAAAAtEEjl_jzyAvu-cPTYUefCtX3cT66T4UVwy-Bvk7QMUCbAuayZIK7zuMrwBtHiM_i
+淘宝/天猫聚合页,聚合,B,标题、价格机制、店铺名,https://tao.hooos.com/tag_ehd%E6%B4%97%E5%8F%91%E6%B0%B4%E5%AE%98%E6%96%B9%E6%97%97%E8%88%B0%E5%BA%97_3.html
+都市快报 2025-07-04,媒体/活动,B,套餐组合、榜单口径,https://mdaily.hangzhou.com.cn/dskb/2025/07/04/article_detail_2_20250704A1515.html
+都市快报 2026-01-18,媒体/活动,B,400ml活动装、赠品,https://mdaily.hangzhou.com.cn/dskb/2026/01/18/article_detail_2_20260118A0710.html

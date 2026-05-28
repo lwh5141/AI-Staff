@@ -33,8 +33,9 @@ import {
   RefreshCw,
   FileText
 } from 'lucide-react';
-import { AppAsset, KBDocument, KBChunk, WorkflowNode, SystemLog, ChatSession, ChatMessage } from './types';
+import { AppAsset, KBDocument, KBChunk, WorkflowNode, WorkflowConnection, SystemLog, ChatSession, ChatMessage } from './types';
 import { Sparkline } from './components/Sparkline';
+import { AnalyticsCharts } from './components/AnalyticsDashboard';
 import { 
   INITIAL_APPS, 
   INITIAL_DOCS, 
@@ -121,6 +122,17 @@ export default function App() {
   const [viewOffset, setViewOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState<number>(1);
   const panStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Connection states
+  const [connections, setConnections] = useState<WorkflowConnection[]>([
+    { id: 'conn_1', fromNodeId: 'node_start', fromPortId: 'output', toNodeId: 'node_optimize', toPortId: 'input' },
+    { id: 'conn_2', fromNodeId: 'node_optimize', fromPortId: 'output', toNodeId: 'node_condition', toPortId: 'input' },
+    { id: 'conn_3', fromNodeId: 'node_condition', fromPortId: 'output_true', toNodeId: 'node_retrieval', toPortId: 'input' },
+    { id: 'conn_4', fromNodeId: 'node_condition', fromPortId: 'output_false', toNodeId: 'node_fallback', toPortId: 'input' },
+    { id: 'conn_5', fromNodeId: 'node_retrieval', fromPortId: 'output', toNodeId: 'node_output', toPortId: 'input' }
+  ]);
+  const [connectingFrom, setConnectingFrom] = useState<{ nodeId: string; portId: string } | null>(null);
+  const [connectingMousePos, setConnectingMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Settings states
   const [isModelModalOpen, setIsModelModalOpen] = useState<boolean>(false);
@@ -419,6 +431,9 @@ export default function App() {
     if (isPanning) {
       setIsPanning(false);
     }
+    if (connectingFrom) {
+      setConnectingFrom(null);
+    }
   };
 
   const handleCanvasMouseDown = (e: MouseEvent) => {
@@ -428,6 +443,36 @@ export default function App() {
       panStart.current = { x: e.clientX, y: e.clientY };
       e.preventDefault();
     }
+  };
+
+  // Connection handlers
+  const handlePortMouseDown = (e: React.MouseEvent, nodeId: string, portId: string, isOutput: boolean) => {
+    e.stopPropagation();
+    if (isOutput) {
+      setConnectingFrom({ nodeId, portId });
+      setConnectingMousePos({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handlePortMouseUp = (e: React.MouseEvent, nodeId: string, portId: string, isInput: boolean) => {
+    e.stopPropagation();
+    if (connectingFrom && isInput && connectingFrom.nodeId !== nodeId) {
+      const newConn: WorkflowConnection = {
+        id: `conn_${Date.now()}`,
+        fromNodeId: connectingFrom.nodeId,
+        fromPortId: connectingFrom.portId,
+        toNodeId: nodeId,
+        toPortId: portId
+      };
+      setConnections(prev => [...prev, newConn]);
+      addLog('info', `创建了节点连接: ${nodes.find(n => n.id === connectingFrom.nodeId)?.name} → ${nodes.find(n => n.id === nodeId)?.name}`);
+    }
+    setConnectingFrom(null);
+  };
+
+  const handleDeleteConnection = (connId: string) => {
+    setConnections(prev => prev.filter(c => c.id !== connId));
+    addLog('info', `断开了节点连接`);
   };
 
   const handleCanvasWheel = (e: React.WheelEvent) => {
@@ -1489,110 +1534,87 @@ export default function App() {
                     🔍 {Math.round(zoom * 100)}%
                   </div>
 
-                  {/* SVG background connections */}
-                  <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style={{ transform: `translate(${viewOffset.x}px, ${viewOffset.y}px) scale(${zoom})`, transformOrigin: '0 0' }}>
+                  {/* SVG background connections - expanded size to prevent clipping */}
+                  <svg 
+                    className="absolute top-0 left-0 pointer-events-auto z-0" 
+                    style={{ 
+                      width: '3000px', 
+                      height: '2000px',
+                      transform: `translate(${viewOffset.x}px, ${viewOffset.y}px) scale(${zoom})`, 
+                      transformOrigin: '0 0' 
+                    }}
+                  >
                     <defs>
                       <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                         <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7a7582" />
                       </marker>
+                      <marker id="arrow-primary" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#4f378a" />
+                      </marker>
                     </defs>
 
-                    {/* Start -> Optimize */}
-                    {(() => {
-                      const start = nodes.find(n => n.id === 'node_start');
-                      const opt = nodes.find(n => n.id === 'node_optimize');
-                      if (start && opt) {
-                        return (
-                          <path 
-                            d={`M ${start.x + 150} ${start.y + 35} C ${start.x + 220} ${start.y + 35}, ${opt.x - 70} ${opt.y + 35}, ${opt.x} ${opt.y + 35}`} 
-                            fill="none" 
-                            stroke="#7a7582" 
-                            strokeWidth="2.5" 
-                            strokeDasharray="4"
-                            markerEnd="url(#arrow)"
-                          />
-                        );
+                    {/* Render connections dynamically */}
+                    {connections.map(conn => {
+                      const fromNode = nodes.find(n => n.id === conn.fromNodeId);
+                      const toNode = nodes.find(n => n.id === conn.toNodeId);
+                      if (!fromNode || !toNode) return null;
+                      
+                      const isCondition = fromNode.type === 'condition';
+                      const isPrimary = conn.fromPortId === 'output_true' || (fromNode.type === 'knowledge_search' && toNode.type === 'ai_chat');
+                      
+                      let startX = fromNode.x + 150;
+                      let startY = fromNode.y + 35;
+                      let endX = toNode.x;
+                      let endY = toNode.y + 35;
+                      
+                      if (isCondition && conn.fromPortId === 'output_true') {
+                        startY = fromNode.y + 25;
+                      } else if (isCondition && conn.fromPortId === 'output_false') {
+                        startY = fromNode.y + 60;
                       }
-                      return null;
-                    })()}
-
-                    {/* Optimize -> Condition */}
-                    {(() => {
-                      const opt = nodes.find(n => n.id === 'node_optimize');
-                      const cond = nodes.find(n => n.id === 'node_condition');
-                      if (opt && cond) {
-                        return (
+                      
+                      const cp1x = startX + 70;
+                      const cp1y = startY;
+                      const cp2x = endX - 70;
+                      const cp2y = endY;
+                      
+                      return (
+                        <g key={conn.id}>
                           <path 
-                            d={`M ${opt.x + 150} ${opt.y + 35} C ${opt.x + 230} ${opt.y + 35}, ${cond.x - 80} ${cond.y + 35}, ${cond.x} ${cond.y + 35}`} 
+                            d={`M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`} 
                             fill="none" 
-                            stroke="#7a7582" 
-                            strokeWidth="2.5" 
-                            markerEnd="url(#arrow)"
+                            stroke={isPrimary ? '#4f378a' : '#7a7582'} 
+                            strokeWidth={isCondition ? 2.5 : 2} 
+                            strokeDasharray={fromNode.type === 'start' ? '4' : '0'}
+                            markerEnd={isPrimary ? 'url(#arrow-primary)' : 'url(#arrow)'}
+                            className="cursor-pointer hover:stroke-error transition-colors"
+                            onClick={() => handleDeleteConnection(conn.id)}
                           />
-                        );
-                      }
-                      return null;
-                    })()}
+                        </g>
+                      );
+                    })}
 
-                    {/* Condition (Product match) -> Retrieval */}
-                    {(() => {
-                      const cond = nodes.find(n => n.id === 'node_condition');
-                      const ret = nodes.find(n => n.id === 'node_retrieval');
-                      if (cond && ret) {
-                        return (
-                          <path 
-                            d={`M ${cond.x + 150} ${cond.y + 25} C ${cond.x + 220} ${cond.y + 25}, ${ret.x - 70} ${ret.y + 35}, ${ret.x} ${ret.y + 35}`} 
-                            fill="none" 
-                            stroke="#4f378a" 
-                            strokeWidth="2.5" 
-                            markerEnd="url(#arrow)"
-                          />
-                        );
-                      }
-                      return null;
+                    {/* Drawing line while connecting */}
+                    {connectingFrom && (() => {
+                      const fromNode = nodes.find(n => n.id === connectingFrom.nodeId);
+                      if (!fromNode) return null;
+                      const startX = fromNode.x + 150;
+                      const startY = fromNode.y + 35;
+                      const rect = canvasRef.current?.getBoundingClientRect();
+                      if (!rect) return null;
+                      const mouseX = (connectingMousePos.x - rect.left - viewOffset.x) / zoom;
+                      const mouseY = (connectingMousePos.y - rect.top - viewOffset.y) / zoom;
+                      
+                      return (
+                        <path 
+                          d={`M ${startX} ${startY} L ${mouseX} ${mouseY}`} 
+                          fill="none" 
+                          stroke="#4f378a" 
+                          strokeWidth="2" 
+                          strokeDasharray="6,4"
+                        />
+                      );
                     })()}
-
-                    {/* Condition (No match) -> Fallback reply */}
-                    {(() => {
-                      const cond = nodes.find(n => n.id === 'node_condition');
-                      const fall = nodes.find(n => n.id === 'node_fallback');
-                      if (cond && fall) {
-                        return (
-                          <path 
-                            d={`M ${cond.x + 150} ${cond.y + 60} C ${cond.x + 220} ${cond.y + 60}, ${fall.x - 70} ${fall.y + 35}, ${fall.x} ${fall.y + 35}`} 
-                            fill="none" 
-                            stroke="#7a7582" 
-                            strokeWidth="2" 
-                            markerEnd="url(#arrow)"
-                          />
-                        );
-                      }
-                      return null;
-                    })()}
-
-                    {/* Retrieval -> Output ai_chat */}
-                    {(() => {
-                      const ret = nodes.find(n => n.id === 'node_retrieval');
-                      const out = nodes.find(n => n.id === 'node_output');
-                      if (ret && out) {
-                        return (
-                          <path 
-                            d={`M ${ret.x + 150} ${ret.y + 35} C ${ret.x + 230} ${ret.y + 35}, ${out.x - 80} ${out.y + 35}, ${out.x} ${out.y + 35}`} 
-                            fill="none" 
-                            stroke="#4f378a" 
-                            strokeWidth="2.5" 
-                            markerEnd="url(#arrow)"
-                            className="stroke-primary"
-                          />
-                        );
-                      }
-                      return null;
-                    })()}
-
-                    {/* Dynamic connected lines for user generated customizable nodes */}
-                    {nodes.filter(n => !['node_start', 'node_optimize', 'node_condition', 'node_retrieval', 'node_output', 'node_fallback'].includes(n.id)).map(node => (
-                      <circle key={node.id} cx={node.x} cy={node.y} r="3" fill="#cbc4d2" />
-                    ))}
                   </svg>
 
                   {/* Nodes list rendering */}
@@ -1625,9 +1647,19 @@ export default function App() {
 
                         {/* Visual Node ports connection circles */}
                         {!isStart && (
-                          <div className="absolute -left-1 text-primary top-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-outline bg-surface-container-lowest"></div>
+                          <div 
+                            className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-outline bg-surface-container-lowest hover:bg-primary hover:border-primary cursor-pointer z-20 transition-colors"
+                            onMouseDown={(e) => handlePortMouseDown(e, node.id, 'input', false)}
+                            onMouseUp={(e) => handlePortMouseUp(e, node.id, 'input', true)}
+                            title="输入端口"
+                          />
                         )}
-                        <div className="absolute -right-1 text-primary top-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-outline bg-surface-container-lowest"></div>
+                        <div 
+                          className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-outline bg-surface-container-lowest hover:bg-primary hover:border-primary cursor-pointer z-20 transition-colors"
+                          onMouseDown={(e) => handlePortMouseDown(e, node.id, 'output', true)}
+                          onMouseUp={(e) => handlePortMouseUp(e, node.id, 'output', false)}
+                          title="输出端口"
+                        />
                       </div>
                     );
                   })}
@@ -1872,80 +1904,7 @@ export default function App() {
           )}
 
           {/* TAB 6: DATA ANALYTICS */}
-          {activeTab === 'analytics' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-on-surface">对话量及命中率数据监控</h1>
-                <p className="text-sm text-on-surface-variant mt-1">展示大语言模型执行 Cosmetics 精准语义召回、错漏、客服拦截大盘走势图。</p>
-              </div>
-
-              {/* Day trends charts using animated pure vector SVGs to avoid recharts version conflict */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-bold text-xs text-on-surface mb-6 uppercase tracking-wider block">近一周系统对话量趋势</h3>
-                  <div className="h-64 relative w-full flex items-end">
-                    {/* Visual columns line representing weekly data */}
-                    <svg className="w-full h-full" viewBox="0 0 400 200">
-                      <line x1="20" y1="180" x2="380" y2="180" stroke="#cbc4d2" strokeWidth="1" />
-                      <line x1="20" y1="30" x2="380" y2="30" stroke="#cbc4d2" strokeWidth="0.5" strokeDasharray="4" />
-                      <line x1="20" y1="100" x2="380" y2="100" stroke="#cbc4d2" strokeWidth="0.5" strokeDasharray="4" />
-                      
-                      {/* Trend area pathway */}
-                      <path d="M 40 160 L 90 120 L 140 140 L 190 90 L 240 70 L 290 50 L 340 38" fill="none" stroke="#4f37a8" strokeWidth="3" />
-                      
-                      {/* Interactive dot plotters */}
-                      <circle cx="40" cy="160" r="4" fill="#4f378a" />
-                      <circle cx="90" cy="120" r="4" fill="#4f378a" />
-                      <circle cx="140" cy="140" r="4" fill="#4f378a" />
-                      <circle cx="190" cy="90" r="4" fill="#4f378a" />
-                      <circle cx="240" cy="70" r="4" fill="#4f378a" />
-                      <circle cx="290" cy="50" r="4" fill="#4f378a" />
-                      <circle cx="340" cy="38" r="4" fill="#4f378a" />
-
-                      <text x="40" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周一</text>
-                      <text x="90" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周二</text>
-                      <text x="140" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周三</text>
-                      <text x="190" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周四</text>
-                      <text x="240" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周五</text>
-                      <text x="290" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周六</text>
-                      <text x="340" y="195" fontSize="9" fill="#7a7582" textAnchor="middle" fontFamily="mono">周日</text>
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-bold text-xs text-on-surface mb-6 uppercase tracking-wider block">知识库精准匹配率 / 无法命中拦截率</h3>
-                  <div className="h-64 relative w-full">
-                    <svg className="w-full h-full" viewBox="0 0 400 200">
-                      <line x1="20" y1="180" x2="380" y2="180" stroke="#cbc4d2" strokeWidth="1" />
-                      
-                      {/* Area Bars 1 */}
-                      <rect x="50" y="40" width="30" height="140" fill="#2E7D32" opacity="0.8" rx="2" />
-                      <rect x="90" y="150" width="30" height="30" fill="#ba1a1a" opacity="0.8" rx="2" />
-
-                      {/* Area Bars 2 */}
-                      <rect x="170" y="30" width="30" height="150" fill="#2E7D32" opacity="0.8" rx="2" />
-                      <rect x="210" y="160" width="30" height="20" fill="#ba1a1a" opacity="0.8" rx="2" />
-
-                      {/* Area Bars 3 */}
-                      <rect x="290" y="20" width="30" height="160" fill="#2E7D32" opacity="0.8" rx="2" />
-                      <rect x="330" y="170" width="30" height="10" fill="#ba1a1a" opacity="0.8" rx="2" />
-
-                      <text x="85" y="195" fontSize="10" fill="#1c1b21" textAnchor="middle" fontWeight="bold">5.11-5.17</text>
-                      <text x="205" y="195" fontSize="10" fill="#1c1b21" textAnchor="middle" fontWeight="bold">5.18-5.24</text>
-                      <text x="325" y="195" fontSize="10" fill="#1c1b21" textAnchor="middle" fontWeight="bold">今日匹配走势</text>
-
-                      {/* legends */}
-                      <rect x="20" y="10" width="10" height="10" fill="#2E7D32" rx="1" />
-                      <text x="35" y="18" fontSize="9" fill="#1c1b21">精准语义召回答复</text>
-                      <rect x="140" y="10" width="10" height="10" fill="#ba1a1a" rx="1" />
-                      <text x="155" y="18" fontSize="9" fill="#1c1b21">无命中转接人工</text>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === 'analytics' && <AnalyticsCharts />}
 
           {/* TAB 7: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
